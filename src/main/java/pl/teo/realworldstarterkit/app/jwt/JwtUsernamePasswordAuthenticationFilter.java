@@ -54,6 +54,5 @@ public class JwtUsernamePasswordAuthenticationFilter extends UsernamePasswordAut
                 .signWith(secretKey)
                 .compact();
         response.addHeader("Autorization", "Token " + token);
-        response.sendRedirect("/api/users/after_login");
     }
 }

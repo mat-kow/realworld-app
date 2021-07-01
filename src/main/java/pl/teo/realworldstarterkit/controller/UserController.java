@@ -18,11 +18,10 @@ public class UserController {
     }
 
 
-
     @GetMapping("/users/after_login")
     public UserAuthenticationDto login(Principal principal) {
-        // todo login
-        return new UserAuthenticationDto();
+        //todo make this run after successful login
+        return userService.getUser(principal);
     }
 
     @PostMapping("/users")
@@ -31,14 +30,20 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    public UserAuthenticationDto getCurrentUser() {
-        //todo principal
-        return null;
+    public UserAuthenticationDto getCurrentUser(Principal principal,
+                                                @RequestHeader("Authorization") String token) {
+        UserAuthenticationDto user = userService.getUser(principal);
+        user.setToken(token);
+        return user;
     }
 
     @PutMapping("/user")
-    public UserAuthenticationDto update(@RequestBody UserUpdateDto userUpdateDto) {
-        return userService.update(userUpdateDto);
+    public UserAuthenticationDto update(Principal principal,
+                                        @RequestBody UserUpdateDto userUpdateDto,
+                                        @RequestHeader("Authorization") String token) {
+        UserAuthenticationDto user = userService.update(userUpdateDto, principal);
+        user.setToken(token);
+        return user;
     }
 
 

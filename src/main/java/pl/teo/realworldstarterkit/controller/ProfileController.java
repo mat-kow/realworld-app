@@ -10,7 +10,6 @@ import pl.teo.realworldstarterkit.service.UserService;
 public class ProfileController {
     private final UserService userService;
 
-    @Autowired
     public ProfileController(UserService userService) {
         this.userService = userService;
     }
