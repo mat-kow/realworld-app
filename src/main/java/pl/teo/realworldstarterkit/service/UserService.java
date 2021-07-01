@@ -10,9 +10,9 @@ import java.security.Principal;
 public interface UserService {
     UserAuthenticationDto save(UserRegistrationDto userRegis);
     UserAuthenticationDto update(UserUpdateDto userUpdate, Principal principal);
-    Profile getProfile(String username);
-    Profile follow(String username);
-    Profile unfollow(String username);
+    Profile getProfile(String username, Principal principal);
+    Profile follow(String username, Principal principal);
+    Profile unfollow(String username, Principal principal);
     UserAuthenticationDto getUser(String username);
     UserAuthenticationDto getUser(Principal principal);
 

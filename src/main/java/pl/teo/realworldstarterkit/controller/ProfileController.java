@@ -1,9 +1,10 @@
 package pl.teo.realworldstarterkit.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import pl.teo.realworldstarterkit.model.dto.Profile;
 import pl.teo.realworldstarterkit.service.UserService;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/profiles")
@@ -15,18 +16,18 @@ public class ProfileController {
     }
 
     @GetMapping("/{username}")
-    public Profile get(@PathVariable String username) {
-        return userService.getProfile(username);
+    public Profile get(@PathVariable String username, Principal principal) {
+        return userService.getProfile(username, principal);
     }
 
     @PostMapping("/{username}/follow")
-    public Profile follow(@PathVariable String username) {
-        return userService.follow(username);
+    public Profile follow(@PathVariable String username, Principal principal) {
+        return userService.follow(username, principal);
     }
 
     @DeleteMapping("/{username}/follow")
-    public Profile unfollow(@PathVariable String username) {
-        return userService.unfollow(username);
+    public Profile unfollow(@PathVariable String username, Principal principal) {
+        return userService.unfollow(username, principal);
     }
 
 }

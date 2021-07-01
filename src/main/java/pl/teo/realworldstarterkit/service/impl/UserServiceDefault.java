@@ -66,31 +66,35 @@ public class UserServiceDefault implements UserService {
     }
 
     @Override
-    public Profile getProfile(String username) {
+    public Profile getProfile(String username, Principal principal) {
+        User currentUser = null;
+        if (principal != null) {
+            currentUser = getUserFromPrincipal(principal);
+        }
         User user = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
-        return userToProfile(user);
+        return userToProfile(user, currentUser);
     }
 
     @Override
-    public Profile follow(String username) {
+    public Profile follow(String username, Principal principal) {
         User toFollow = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
-        User follower = new User(); //todo principal
-        List<User> lst = follower.getFallowingList();
+        User currentUser = getUserFromPrincipal(principal);
+        List<User> lst = currentUser.getFallowingList();
         lst.add(toFollow);
-        follower.setFallowingList(lst);
-        userRepo.save(follower);
-        return userToProfile(toFollow);
+        currentUser.setFallowingList(lst);
+        userRepo.save(currentUser);
+        return userToProfile(toFollow, currentUser);
     }
 
     @Override
-    public Profile unfollow(String username) {
+    public Profile unfollow(String username, Principal principal) {
         User toUnfollow = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
-        User follower = new User(); //todo principal
-        List<User> lst = follower.getFallowingList();
+        User currentUser = getUserFromPrincipal(principal);
+        List<User> lst = currentUser.getFallowingList();
         lst.remove(toUnfollow);
-        follower.setFallowingList(lst);
-        userRepo.save(follower);
-        return userToProfile(toUnfollow);
+        currentUser.setFallowingList(lst);
+        userRepo.save(currentUser);
+        return userToProfile(toUnfollow, currentUser);
     }
 
     @Override
@@ -104,17 +108,17 @@ public class UserServiceDefault implements UserService {
         return userToUserAuthDto(getUserFromPrincipal(principal));
     }
 
-    private Profile userToProfile(User user) {
+    private Profile userToProfile(User viewedUser, User currentUser) {
         Profile profile = new Profile();
-        profile.setUsername(user.getUsername());
-        profile.setBio(user.getBio());
-        profile.setImage(user.getImage());
-        profile.setFollowing(true);
+        profile.setUsername(viewedUser.getUsername());
+        profile.setBio(viewedUser.getBio());
+        profile.setImage(viewedUser.getImage());
+        if (currentUser == null) {
+            profile.setFollowing(false);
+        } else {
+            profile.setFollowing(currentUser.getFallowingList().stream().anyMatch(u -> u.getId() == viewedUser.getId()));
+        }
 
-        /*todo
-           if principal.fallowingList contains user
-            profile.setFollowing(true);
-         */
         return profile;
     }
     private User userRegisDtoToUser(UserRegistrationDto dto) {

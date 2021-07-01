@@ -3,6 +3,7 @@ package pl.teo.realworldstarterkit.app;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,7 +15,6 @@ import pl.teo.realworldstarterkit.app.jwt.JwtUsernamePasswordAuthenticationFilte
 import javax.crypto.SecretKey;
 
 @Configuration
-//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -27,6 +27,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new JwtTokenVerifier(secretKey()), JwtUsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                     .antMatchers("/api/users"). permitAll()
+                    .antMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
+                    .antMatchers(HttpMethod.POST, "/api/profiles/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/api/profiles/**").authenticated()
                 .anyRequest().authenticated();
     }
 
