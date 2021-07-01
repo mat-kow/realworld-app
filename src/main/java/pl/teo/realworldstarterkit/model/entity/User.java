@@ -1,11 +1,14 @@
 package pl.teo.realworldstarterkit.model.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
 
-@Entity @Data
+@Entity
+@Getter @Setter
+@Table(name = "users")
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

@@ -1,11 +1,19 @@
+#spring:
+#  datasource:
+#    url: jdbc:h2:mem:/data/realword
+#    driver-class-name: org.h2.Driver
+#    username: sa
+#    password: pass
+#  jpa:
+#    database-platform: org.hibernate.dialect.H2Dialect
+#  h2:
+#    console:
+#      enabled: true
 spring:
   datasource:
-    url: jdbc:h2:mem:/data/realword
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: pass
+    url: jdbc:postgresql://localhost:5432/real
+    username: postgres
+    password: q
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-  h2:
-    console:
-      enabled: true
+    hibernate:
+      ddl-auto: update
