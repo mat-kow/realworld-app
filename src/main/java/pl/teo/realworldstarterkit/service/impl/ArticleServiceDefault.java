@@ -3,6 +3,8 @@ package pl.teo.realworldstarterkit.service.impl;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.teo.realworldstarterkit.app.exception.ApiForbiddenException;
+import pl.teo.realworldstarterkit.app.exception.ApiNotFoundException;
 import pl.teo.realworldstarterkit.model.dto.*;
 import pl.teo.realworldstarterkit.model.entity.Article;
 import pl.teo.realworldstarterkit.model.entity.Comment;
@@ -10,7 +12,6 @@ import pl.teo.realworldstarterkit.model.entity.Tag;
 import pl.teo.realworldstarterkit.model.entity.User;
 import pl.teo.realworldstarterkit.model.repository.ArticleRepo;
 import pl.teo.realworldstarterkit.model.repository.CommentRepo;
-import pl.teo.realworldstarterkit.model.repository.TagRepo;
 import pl.teo.realworldstarterkit.model.repository.UserRepo;
 import pl.teo.realworldstarterkit.service.ArticleService;
 import pl.teo.realworldstarterkit.service.UserService;
@@ -23,14 +24,12 @@ import java.util.stream.Collectors;
 @Service
 public class ArticleServiceDefault implements ArticleService {
     private final UserService userService;
-    private final TagRepo tagRepo;
     private final ArticleRepo articleRepo;
     private final CommentRepo commentRepo;
     private final UserRepo userRepo;
 
-    public ArticleServiceDefault(UserService userService, TagRepo tagRepo, ArticleRepo articleRepo, CommentRepo commentRepo, UserRepo userRepo) {
+    public ArticleServiceDefault(UserService userService, ArticleRepo articleRepo, CommentRepo commentRepo, UserRepo userRepo) {
         this.userService = userService;
-        this.tagRepo = tagRepo;
         this.articleRepo = articleRepo;
         this.commentRepo = commentRepo;
         this.userRepo = userRepo;
@@ -47,15 +46,17 @@ public class ArticleServiceDefault implements ArticleService {
 
     @Override
     public ArticleDisplayJsonWrapper getBySlug(String slug, Principal principal) {
-        return mapArticleToDisplay(articleRepo.getArticleBySlug(slug).orElseThrow(RuntimeException::new), principal);//todo exception
+        return mapArticleToDisplay(articleRepo.getArticleBySlug(slug)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist")), principal);
     }
 
     @Override
     @Transactional
     public ArticleDisplayJsonWrapper updateArticle(String slug, ArticleUpdateDto updateDto, Principal principal) {
-        Article article = articleRepo.getArticleBySlug(slug).orElseThrow(RuntimeException::new);//todo exception 404
+        Article article = articleRepo.getArticleBySlug(slug)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist"));
         if (article.getAuthor().getId() != Long.parseLong(principal.getName())) {
-            throw new RuntimeException(); //todo 403
+            throw new ApiForbiddenException();
         }
         String body = updateDto.getBody();
         if (body != null && !body.isBlank()) {
@@ -76,9 +77,10 @@ public class ArticleServiceDefault implements ArticleService {
     @Override
     @Transactional
     public void deleteArticle(String slug, Principal principal) {
-        Article article = articleRepo.getArticleBySlug(slug).orElseThrow(RuntimeException::new);//todo 404
+        Article article = articleRepo.getArticleBySlug(slug)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist"));
         if (article.getId() != Long.parseLong(principal.getName())) {
-            throw new RuntimeException(); // TODO: 02.07.2021 forbidden
+            throw new ApiForbiddenException();
         }
         articleRepo.delete(article);
     }
@@ -86,7 +88,8 @@ public class ArticleServiceDefault implements ArticleService {
     @Override
     @Transactional
     public CommentDisplayJsonWrapper newComment(String slug, Principal principal, CommentCreateDto createDto) {
-        Article article = articleRepo.getArticleBySlug(slug).orElseThrow(RuntimeException::new);//todo 404
+        Article article = articleRepo.getArticleBySlug(slug)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist"));
         User author = userService.getCurrentUser(principal);
         Comment comment = new Comment(createDto.getBody(), author, article);
         return mapCommentToDisplay(commentRepo.save(comment), principal);
@@ -94,7 +97,8 @@ public class ArticleServiceDefault implements ArticleService {
 
     @Override
     public CommentMultipleJsonWrapper getComments(String slug, Principal principal) {
-        Article article = articleRepo.getArticleBySlug(slug).orElseThrow(RuntimeException::new);// TODO: 02.07.2021 404
+        Article article = articleRepo.getArticleBySlug(slug)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist"));
         return new CommentMultipleJsonWrapper(commentRepo.getAllByArticle(article).stream()
                 .map(comment -> mapCommentToDisplay(comment, principal)).collect(Collectors.toList()));
     }
@@ -102,9 +106,10 @@ public class ArticleServiceDefault implements ArticleService {
     @Override
     @Transactional
     public void deleteComment(String slug, Principal principal, long id) {
-        Comment comment = commentRepo.findById(id).orElseThrow(RuntimeException::new); // TODO: 02.07.2021 404
+        Comment comment = commentRepo.findById(id)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist"));
         if (comment.getAuthor().getId() != Long.parseLong(principal.getName())) {
-            throw new RuntimeException(); // TODO: 02.07.2021 403
+            throw new ApiForbiddenException();
         }
         commentRepo.delete(comment);
     }
@@ -112,7 +117,8 @@ public class ArticleServiceDefault implements ArticleService {
     @Override
     @Transactional
     public ArticleDisplayJsonWrapper favorite(String slug, Principal principal) {
-        Article article = articleRepo.getArticleBySlug(slug).orElseThrow(RuntimeException::new); // TODO: 02.07.2021 404
+        Article article = articleRepo.getArticleBySlug(slug)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist"));
         User currentUser = userService.getCurrentUser(principal);
         //check if article is already on favorite list
         List<Article> favouriteList = currentUser.getFavouriteList();
@@ -129,7 +135,8 @@ public class ArticleServiceDefault implements ArticleService {
     @Override
     @Transactional
     public ArticleDisplayJsonWrapper unFavorite(String slug, Principal principal) {
-        Article article = articleRepo.getArticleBySlug(slug).orElseThrow(RuntimeException::new); // TODO: 02.07.2021 404
+        Article article = articleRepo.getArticleBySlug(slug)
+                .orElseThrow(() -> new ApiNotFoundException("Article does not exist"));
         User currentUser = userService.getCurrentUser(principal);
         //check if article is on favorite list
         List<Article> favouriteList = currentUser.getFavouriteList();
@@ -161,7 +168,6 @@ public class ArticleServiceDefault implements ArticleService {
         article.setDescription(dto.getDescription());
         if (dto.getTagList() != null) {
             List<Tag> tagList = dto.getTagList().stream().map(Tag::new).collect(Collectors.toList());
-            tagList.stream().filter(tag -> !tagRepo.existsById(tag.getName())).forEach(tagRepo::save);
             article.setTagList(tagList);
         } else {
             article.setTagList(new ArrayList<>());

@@ -1,10 +1,9 @@
 package pl.teo.realworldstarterkit.service.impl;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
+import pl.teo.realworldstarterkit.app.exception.ApiNotFoundException;
+import pl.teo.realworldstarterkit.app.exception.ApiValidationException;
 import pl.teo.realworldstarterkit.model.dto.Profile;
 import pl.teo.realworldstarterkit.model.dto.UserAuthenticationDto;
 import pl.teo.realworldstarterkit.model.dto.UserRegistrationDto;
@@ -31,7 +30,7 @@ public class UserServiceDefault implements UserService {
     @Transactional
     public UserAuthenticationDto save(UserRegistrationDto userRegis) {
         if (userRepo.existsByEmailOrUsername(userRegis.getEmail(), userRegis.getUsername())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "error!!!"); //todo exception
+            throw new ApiValidationException();
         }
         User userSaved = userRepo.save(userRegisDtoToUser(userRegis));
         return userToUserAuthDto(userSaved);
@@ -71,13 +70,15 @@ public class UserServiceDefault implements UserService {
         if (principal != null) {
             currentUser = getCurrentUser(principal);
         }
-        User user = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
+        User user = userRepo.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ApiNotFoundException("User does not exist"));
         return userToProfile(user, currentUser);
     }
 
     @Override
     public Profile follow(String username, Principal principal) {
-        User toFollow = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
+        User toFollow = userRepo.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ApiNotFoundException("User does not exist"));
         User currentUser = getCurrentUser(principal);
         List<User> lst = currentUser.getFallowingList();
         lst.add(toFollow);
@@ -88,7 +89,8 @@ public class UserServiceDefault implements UserService {
 
     @Override
     public Profile unfollow(String username, Principal principal) {
-        User toUnfollow = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
+        User toUnfollow = userRepo.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ApiNotFoundException("User does not exist"));
         User currentUser = getCurrentUser(principal);
         List<User> lst = currentUser.getFallowingList();
         lst.remove(toUnfollow);
@@ -100,7 +102,7 @@ public class UserServiceDefault implements UserService {
     @Override
     public UserAuthenticationDto getUser(String username) {
         return userToUserAuthDto(userRepo.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username + " dont exist")));
+                .orElseThrow(() -> new ApiNotFoundException("User does not exist")));
     }
 
     @Override
@@ -121,6 +123,7 @@ public class UserServiceDefault implements UserService {
 
         return profile;
     }
+
     private User userRegisDtoToUser(UserRegistrationDto dto) {
         User user = new User();
         user.setUsername(dto.getUsername());
@@ -143,6 +146,6 @@ public class UserServiceDefault implements UserService {
     @Override
     public User getCurrentUser(Principal principal) {
         return  userRepo.findById(Long.valueOf(principal.getName()))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new ApiNotFoundException("User does not exist"));
     }
 }

@@ -26,8 +26,8 @@ public class Article {
     private String title;
     private String description;
     private String body;
-    @ManyToMany
-    private List<Tag> tagList; // TODO: 02.07.2021 cascade
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Tag> tagList;
     @CreationTimestamp
     private Timestamp createdAt;
     @UpdateTimestamp
