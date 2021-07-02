@@ -40,7 +40,7 @@ public class UserServiceDefault implements UserService {
     @Override
     @Transactional
     public UserAuthenticationDto update(UserUpdateDto userUpdate, Principal principal) {
-        User user = getUserFromPrincipal(principal);
+        User user = getCurrentUser(principal);
         String email = userUpdate.getEmail();
         if (!(email == null || email.isBlank())) {
             user.setEmail(email);
@@ -69,7 +69,7 @@ public class UserServiceDefault implements UserService {
     public Profile getProfile(String username, Principal principal) {
         User currentUser = null;
         if (principal != null) {
-            currentUser = getUserFromPrincipal(principal);
+            currentUser = getCurrentUser(principal);
         }
         User user = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
         return userToProfile(user, currentUser);
@@ -78,7 +78,7 @@ public class UserServiceDefault implements UserService {
     @Override
     public Profile follow(String username, Principal principal) {
         User toFollow = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
-        User currentUser = getUserFromPrincipal(principal);
+        User currentUser = getCurrentUser(principal);
         List<User> lst = currentUser.getFallowingList();
         lst.add(toFollow);
         currentUser.setFallowingList(lst);
@@ -89,7 +89,7 @@ public class UserServiceDefault implements UserService {
     @Override
     public Profile unfollow(String username, Principal principal) {
         User toUnfollow = userRepo.findByUsernameIgnoreCase(username).orElseThrow(RuntimeException::new);//todo exception
-        User currentUser = getUserFromPrincipal(principal);
+        User currentUser = getCurrentUser(principal);
         List<User> lst = currentUser.getFallowingList();
         lst.remove(toUnfollow);
         currentUser.setFallowingList(lst);
@@ -105,7 +105,7 @@ public class UserServiceDefault implements UserService {
 
     @Override
     public UserAuthenticationDto getUser(Principal principal) {
-        return userToUserAuthDto(getUserFromPrincipal(principal));
+        return userToUserAuthDto(getCurrentUser(principal));
     }
 
     private Profile userToProfile(User viewedUser, User currentUser) {
@@ -140,7 +140,8 @@ public class UserServiceDefault implements UserService {
         return userAuthenticationDto;
     }
 
-    private User getUserFromPrincipal(Principal principal) {
+    @Override
+    public User getCurrentUser(Principal principal) {
         return  userRepo.findById(Long.valueOf(principal.getName()))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }

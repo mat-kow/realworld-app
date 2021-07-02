@@ -1,8 +1,19 @@
 package pl.teo.realworldstarterkit.service;
 
-import pl.teo.realworldstarterkit.model.dto.ArticleCreateDto;
-import pl.teo.realworldstarterkit.model.entity.Article;
+import pl.teo.realworldstarterkit.model.dto.*;
+
+import java.security.Principal;
 
 public interface ArticleService {
-    Article save(ArticleCreateDto articleDto);
+    ArticleDisplayJsonWrapper saveArticle(ArticleCreateDto articleDto, Principal principal);
+    ArticleDisplayJsonWrapper getBySlug(String slug, Principal principal);
+    ArticleDisplayJsonWrapper updateArticle(String slug, ArticleUpdateDto updateDto, Principal principal);
+    void deleteArticle(String slug, Principal principal);
+
+    CommentDisplayJsonWrapper newComment(String slug, Principal principal, CommentCreateDto createDto);
+    CommentMultipleJsonWrapper getComments(String slug, Principal principal);
+    void deleteComment(String slug, Principal principal, long id);
+
+    ArticleDisplayJsonWrapper favorite(String slug, Principal principal);
+    ArticleDisplayJsonWrapper unFavorite(String slug, Principal principal);
 }

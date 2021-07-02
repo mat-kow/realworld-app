@@ -2,7 +2,8 @@ package pl.teo.realworldstarterkit.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,7 +14,8 @@ import java.util.List;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.WRAPPER_OBJECT;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 
-@Entity @Data
+@Entity
+@Setter @Getter
 @JsonTypeName("article")
 @JsonTypeInfo(include = WRAPPER_OBJECT, use = NAME)
 public class Article {
@@ -25,7 +27,7 @@ public class Article {
     private String description;
     private String body;
     @ManyToMany
-    private List<Tag> tagList;
+    private List<Tag> tagList; // TODO: 02.07.2021 cascade
     @CreationTimestamp
     private Timestamp createdAt;
     @UpdateTimestamp

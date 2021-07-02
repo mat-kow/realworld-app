@@ -27,7 +27,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterAfter(new JwtTokenVerifier(secretKey()), JwtUsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                     .antMatchers("/api/users"). permitAll()
-                    .antMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
+                    .antMatchers(HttpMethod.GET, "/api/profiles/**", "/api/articles/**", "/api/tags")
+                        .permitAll()
                     .antMatchers(HttpMethod.POST, "/api/profiles/**").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/api/profiles/**").authenticated()
                 .anyRequest().authenticated();
