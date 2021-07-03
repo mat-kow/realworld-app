@@ -17,3 +17,5 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+#server:
+#  port: 3000

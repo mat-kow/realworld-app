@@ -151,6 +151,30 @@ public class ArticleServiceDefault implements ArticleService {
         return mapArticleToDisplay(article,principal);
     }
 
+    @Override
+    public ArticleMultipleJsonWrapper getByTagName(String tagName, Principal principal, int offset, int limit) {
+        return new ArticleMultipleJsonWrapper(articleRepo.getByTag(tagName, offset, limit).stream()
+                .map(article -> mapArticleToDisplay(article, principal)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public ArticleMultipleJsonWrapper getByAuthor(String authorName, Principal principal, int offset, int limit) {
+        return new ArticleMultipleJsonWrapper(articleRepo.getByAuthor(authorName, offset, limit).stream()
+                .map(article -> mapArticleToDisplay(article, principal)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public ArticleMultipleJsonWrapper getByFavorited(String username, Principal principal, int offset, int limit) {
+        return new ArticleMultipleJsonWrapper(articleRepo.getByFavorited(username, offset, limit).stream()
+                .map(article -> mapArticleToDisplay(article, principal)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public ArticleMultipleJsonWrapper getAll(Principal principal, int offset, int limit) {
+        return new ArticleMultipleJsonWrapper(articleRepo.getAll(offset, limit).stream()
+                .map(article -> mapArticleToDisplay(article, principal)).collect(Collectors.toList()));
+    }
+
     private CommentDisplayJsonWrapper mapCommentToDisplay(Comment comment, Principal principal) {
         CommentDisplayJsonWrapper displayDto = new CommentDisplayJsonWrapper();
         displayDto.setAuthor(userService.getProfile(comment.getAuthor().getUsername(), principal));

@@ -2,11 +2,9 @@ package pl.teo.realworldstarterkit.controller;
 
 import org.springframework.web.bind.annotation.*;
 import pl.teo.realworldstarterkit.model.dto.*;
-import pl.teo.realworldstarterkit.model.entity.Article;
 import pl.teo.realworldstarterkit.service.ArticleService;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/articles")
@@ -27,9 +25,18 @@ public class ArticleController {
                                      @RequestParam(required = false) String author,
                                      @RequestParam(required = false) String favorited,
                                      @RequestParam(defaultValue = "20") int limit,
-                                     @RequestParam(defaultValue = "0") String offset) {
-        //todo get articles
-        return null;
+                                     @RequestParam(defaultValue = "0") int offset,
+                                                  Principal principal) {
+        if (tag != null) {
+            return articleService.getByTagName(tag, principal, offset, limit);
+        }
+        if (author != null) {
+            return articleService.getByAuthor(author, principal, offset, limit);
+        }
+        if (favorited != null) {
+            return articleService.getByFavorited(favorited, principal, offset, limit);
+        }
+        return articleService.getAll(principal, offset, limit);
     }
 
     @GetMapping("/{slug}")
