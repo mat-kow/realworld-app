@@ -1,7 +1,5 @@
 package pl.teo.realworldstarterkit.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -11,13 +9,8 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
 
-import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.WRAPPER_OBJECT;
-import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
-
-@Entity
+@Entity(name = "articles")
 @Setter @Getter
-@JsonTypeName("article")
-@JsonTypeInfo(include = WRAPPER_OBJECT, use = NAME)
 public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +20,11 @@ public class Article {
     private String description;
     private String body;
     @OneToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "articles_tags",
+            joinColumns = @JoinColumn(name = "article_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     private List<Tag> tagList;
     @CreationTimestamp
     private Timestamp createdAt;
@@ -34,6 +32,6 @@ public class Article {
     private Timestamp updatedAt;
     @ManyToOne
     private User author;
-    private int favouriteCount;
+    private int favoritesCount;
 
 }

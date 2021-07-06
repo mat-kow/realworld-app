@@ -123,7 +123,7 @@ public class ArticleServiceDefault implements ArticleService {
         //check if article is already on favorite list
         List<Article> favouriteList = currentUser.getFavouriteList();
         if (favouriteList.stream().noneMatch(f -> f.getId() == article.getId())) {
-            article.setFavouriteCount(article.getFavouriteCount() + 1);
+            article.setFavoritesCount(article.getFavoritesCount() + 1);
             articleRepo.save(article);
             favouriteList.add(article);
             currentUser.setFavouriteList(favouriteList);
@@ -141,7 +141,7 @@ public class ArticleServiceDefault implements ArticleService {
         //check if article is on favorite list
         List<Article> favouriteList = currentUser.getFavouriteList();
         if (favouriteList.stream().anyMatch(f -> f.getId() == article.getId())) {
-            article.setFavouriteCount(article.getFavouriteCount() - 1);
+            article.setFavoritesCount(article.getFavoritesCount() - 1);
             articleRepo.save(article);
             currentUser.setFavouriteList(favouriteList.stream()
                     .filter(art -> art.getId() != article.getId())
@@ -172,6 +172,13 @@ public class ArticleServiceDefault implements ArticleService {
     @Override
     public ArticleMultipleJsonWrapper getAll(Principal principal, int offset, int limit) {
         return new ArticleMultipleJsonWrapper(articleRepo.getAll(offset, limit).stream()
+                .map(article -> mapArticleToDisplay(article, principal)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public ArticleMultipleJsonWrapper getAllByFallowed(Principal principal, int offset, int limit) {
+        long currentUserId = Long.parseLong(principal.getName());
+        return new ArticleMultipleJsonWrapper(articleRepo.getAllFallowedByUserId(offset, limit, currentUserId).stream()
                 .map(article -> mapArticleToDisplay(article, principal)).collect(Collectors.toList()));
     }
 
@@ -219,7 +226,7 @@ public class ArticleServiceDefault implements ArticleService {
             display.setFavorited(currentUser.getFavouriteList().stream().anyMatch(f -> f.getId() == article.getId()));
         }
 
-        display.setFavoritesCount(article.getFavouriteCount());
+        display.setFavoritesCount(article.getFavoritesCount());
         display.setAuthor(userService.getProfile(article.getAuthor().getUsername(), principal));
         return display;
     }

@@ -21,4 +21,5 @@ public interface ArticleService {
     ArticleMultipleJsonWrapper getByAuthor(String authorName, Principal principal, int offset, int limit);
     ArticleMultipleJsonWrapper getByFavorited(String username, Principal principal, int offset, int limit);
     ArticleMultipleJsonWrapper getAll(Principal principal, int offset, int limit);
+    ArticleMultipleJsonWrapper getAllByFallowed(Principal principal, int offset, int limit);
 }

@@ -64,6 +64,13 @@ public class ArticleController {
         return articleService.unFavorite(slug, principal);
     }
 
+    @GetMapping("/feed")
+    public ArticleMultipleJsonWrapper getFeed(@RequestParam(defaultValue = "20") int limit,
+                                                  @RequestParam(defaultValue = "0") int offset,
+                                                  Principal principal) {
+        return articleService.getAllByFallowed(principal, offset, limit);
+    }
+
 
     // comments
 

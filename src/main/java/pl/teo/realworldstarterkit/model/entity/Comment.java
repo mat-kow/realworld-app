@@ -9,7 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
-@Entity
+@Entity(name = "comments")
 @Setter @Getter @NoArgsConstructor
 public class Comment {
     @Id

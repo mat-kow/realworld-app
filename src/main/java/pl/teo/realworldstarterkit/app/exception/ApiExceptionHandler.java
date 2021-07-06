@@ -35,7 +35,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(value = ApiValidationException.class)
     public ResponseEntity<Object> handleApiValidationException(ApiValidationException e) {
         HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
-        ApiException apiException = new ApiException( // TODO: 02.07.2021 payload
+        ApiException apiException = new ApiException(
                 e.getMessage(),
                 status,
                 ZonedDateTime.now()
