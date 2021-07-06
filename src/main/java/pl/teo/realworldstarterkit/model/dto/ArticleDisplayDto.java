@@ -16,7 +16,7 @@ public class ArticleDisplayDto {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private Author author;
-    private int favouriteCount;
+    private int favoritesCount;
     private boolean favorited;
 
 }

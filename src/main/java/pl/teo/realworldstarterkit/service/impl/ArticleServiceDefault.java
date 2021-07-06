@@ -219,7 +219,7 @@ public class ArticleServiceDefault implements ArticleService {
             display.setFavorited(currentUser.getFavouriteList().stream().anyMatch(f -> f.getId() == article.getId()));
         }
 
-        display.setFavouriteCount(article.getFavouriteCount());
+        display.setFavoritesCount(article.getFavouriteCount());
         display.setAuthor(userService.getProfile(article.getAuthor().getUsername(), principal));
         return display;
     }

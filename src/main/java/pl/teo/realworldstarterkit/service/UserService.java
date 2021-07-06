@@ -1,9 +1,6 @@
 package pl.teo.realworldstarterkit.service;
 
-import pl.teo.realworldstarterkit.model.dto.Profile;
-import pl.teo.realworldstarterkit.model.dto.UserAuthenticationDto;
-import pl.teo.realworldstarterkit.model.dto.UserRegistrationDto;
-import pl.teo.realworldstarterkit.model.dto.UserUpdateDto;
+import pl.teo.realworldstarterkit.model.dto.*;
 import pl.teo.realworldstarterkit.model.entity.User;
 
 import java.security.Principal;
@@ -18,4 +15,5 @@ public interface UserService {
     UserAuthenticationDto getUser(Principal principal);
     User getCurrentUser(Principal principal);
 
+    UserAuthenticationDto login(UserLoginDto dto);
 }

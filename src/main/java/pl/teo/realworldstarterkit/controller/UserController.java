@@ -2,7 +2,9 @@ package pl.teo.realworldstarterkit.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import pl.teo.realworldstarterkit.app.jwt.JwtBuilder;
 import pl.teo.realworldstarterkit.model.dto.*;
+import pl.teo.realworldstarterkit.model.entity.User;
 import pl.teo.realworldstarterkit.service.UserService;
 
 import java.security.Principal;
@@ -18,10 +20,9 @@ public class UserController {
     }
 
 
-    @GetMapping("/users/after_login")
-    public UserAuthenticationDto login(Principal principal) {
-        //todo make this run after successful login
-        return userService.getUser(principal);
+    @PostMapping("/users/login")
+    public UserAuthenticationDto login(@RequestBody UserLoginDto dto) {
+        return userService.login(dto);
     }
 
     @PostMapping("/users")
@@ -42,7 +43,7 @@ public class UserController {
                                         @RequestBody UserUpdateDto userUpdateDto,
                                         @RequestHeader("Authorization") String token) {
         UserAuthenticationDto user = userService.update(userUpdateDto, principal);
-        user.setToken(token);
+        user.setToken(token.replaceFirst("_", " "));
         return user;
     }
 

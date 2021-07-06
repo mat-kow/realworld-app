@@ -18,6 +18,6 @@ public class TegServiceDefault implements TagService {
 
     @Override
     public TagMultipleJsonWrapper getAll() {
-        return new TagMultipleJsonWrapper(tagRepo.findAll().stream().map(Tag::getName).collect(Collectors.toList()));
+        return new TagMultipleJsonWrapper(tagRepo.findAll().stream().map(Tag::getName).collect(Collectors.toSet()));
     }
 }

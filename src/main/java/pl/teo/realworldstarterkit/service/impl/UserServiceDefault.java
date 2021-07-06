@@ -1,13 +1,13 @@
 package pl.teo.realworldstarterkit.service.impl;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.teo.realworldstarterkit.app.exception.ApiForbiddenException;
 import pl.teo.realworldstarterkit.app.exception.ApiNotFoundException;
 import pl.teo.realworldstarterkit.app.exception.ApiValidationException;
-import pl.teo.realworldstarterkit.model.dto.Profile;
-import pl.teo.realworldstarterkit.model.dto.UserAuthenticationDto;
-import pl.teo.realworldstarterkit.model.dto.UserRegistrationDto;
-import pl.teo.realworldstarterkit.model.dto.UserUpdateDto;
+import pl.teo.realworldstarterkit.app.jwt.JwtBuilder;
+import pl.teo.realworldstarterkit.model.dto.*;
 import pl.teo.realworldstarterkit.model.entity.User;
 import pl.teo.realworldstarterkit.model.repository.UserRepo;
 import pl.teo.realworldstarterkit.service.UserService;
@@ -20,10 +20,12 @@ import java.util.List;
 public class UserServiceDefault implements UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final JwtBuilder jwtBuilder;
 
-    public UserServiceDefault(UserRepo userRepo, PasswordEncoder passwordEncoder) {
+    public UserServiceDefault(UserRepo userRepo, PasswordEncoder passwordEncoder, JwtBuilder jwtBuilder) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
+        this.jwtBuilder = jwtBuilder;
     }
 
     @Override
@@ -147,5 +149,18 @@ public class UserServiceDefault implements UserService {
     public User getCurrentUser(Principal principal) {
         return  userRepo.findById(Long.valueOf(principal.getName()))
                 .orElseThrow(() -> new ApiNotFoundException("User does not exist"));
+    }
+
+    @Override
+    public UserAuthenticationDto login(UserLoginDto dto) {
+        User user = userRepo.findByEmailIgnoreCase(dto.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User dont exist"));
+        if (passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            UserAuthenticationDto authDto = userToUserAuthDto(user);
+            authDto.setToken(jwtBuilder.getToken(String.valueOf(user.getId())));
+            return authDto;
+        } else {
+            throw new ApiForbiddenException();
+        }
     }
 }

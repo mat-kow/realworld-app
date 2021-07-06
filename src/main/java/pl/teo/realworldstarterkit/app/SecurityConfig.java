@@ -9,8 +9,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import pl.teo.realworldstarterkit.app.jwt.JwtTokenVerifier;
-import pl.teo.realworldstarterkit.app.jwt.JwtUsernamePasswordAuthenticationFilter;
 
 import javax.crypto.SecretKey;
 
@@ -23,10 +23,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilter(new JwtUsernamePasswordAuthenticationFilter(authenticationManager(), secretKey()))
-                .addFilterAfter(new JwtTokenVerifier(secretKey()), JwtUsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtTokenVerifier(secretKey()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                    .antMatchers("/api/users"). permitAll()
+                    .antMatchers(HttpMethod.POST, "/api/users", "/api/users/login"). permitAll()
                     .antMatchers(HttpMethod.GET, "/api/profiles/**", "/api/articles/**", "/api/tags")
                         .permitAll()
                     .antMatchers(HttpMethod.POST, "/api/profiles/**").authenticated()
