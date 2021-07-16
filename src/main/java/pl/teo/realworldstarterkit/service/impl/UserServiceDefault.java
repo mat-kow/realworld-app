@@ -1,5 +1,6 @@
 package pl.teo.realworldstarterkit.service.impl;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,14 @@ public class UserServiceDefault implements UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtBuilder jwtBuilder;
+    private final ModelMapper mapper;
+
 
     public UserServiceDefault(UserRepo userRepo, PasswordEncoder passwordEncoder, JwtBuilder jwtBuilder) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.jwtBuilder = jwtBuilder;
+        this.mapper = new ModelMapper();
     }
 
     @Override
@@ -34,8 +38,9 @@ public class UserServiceDefault implements UserService {
         if (userRepo.existsByEmailOrUsername(userRegis.getEmail(), userRegis.getUsername())) {
             throw new ApiValidationException();
         }
-        User userSaved = userRepo.save(userRegisDtoToUser(userRegis));
-        return userToUserAuthDto(userSaved);
+        userRegis.setPassword(passwordEncoder.encode(userRegis.getPassword()));
+        User userSaved = userRepo.save(mapper.map(userRegis, User.class));
+        return mapper.map(userSaved, UserAuthenticationDto.class);
     }
 
     @Override
@@ -63,7 +68,7 @@ public class UserServiceDefault implements UserService {
             user.setImage(image);
         }
         User saved = userRepo.save(user);
-        return userToUserAuthDto(saved);
+        return mapper.map(saved, UserAuthenticationDto.class);
     }
 
     @Override
@@ -74,7 +79,14 @@ public class UserServiceDefault implements UserService {
         }
         User user = userRepo.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new ApiNotFoundException("User does not exist"));
-        return userToProfile(user, currentUser);
+
+        Profile profile = mapper.map(user, Profile.class);
+        if (currentUser == null) {
+            profile.setFollowing(false);
+        } else {
+            profile.setFollowing(currentUser.getFallowingList().stream().anyMatch(u -> u.getId() == user.getId()));
+        }
+        return profile;
     }
 
     @Override
@@ -86,7 +98,9 @@ public class UserServiceDefault implements UserService {
         lst.add(toFollow);
         currentUser.setFallowingList(lst);
         userRepo.save(currentUser);
-        return userToProfile(toFollow, currentUser);
+        Profile profile = mapper.map(toFollow, Profile.class);
+        profile.setFollowing(true);
+        return profile;
     }
 
     @Override
@@ -98,51 +112,22 @@ public class UserServiceDefault implements UserService {
         lst.remove(toUnfollow);
         currentUser.setFallowingList(lst);
         userRepo.save(currentUser);
-        return userToProfile(toUnfollow, currentUser);
+
+        Profile profile = mapper.map(toUnfollow, Profile.class);
+        profile.setFollowing(false);
+        return profile;
     }
 
     @Override
     public UserAuthenticationDto getUser(String username) {
-        return userToUserAuthDto(userRepo.findByUsernameIgnoreCase(username)
-                .orElseThrow(() -> new ApiNotFoundException("User does not exist")));
+        User user = userRepo.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ApiNotFoundException("User does not exist"));
+        return mapper.map(user, UserAuthenticationDto.class);
     }
 
     @Override
     public UserAuthenticationDto getUser(Principal principal) {
-        return userToUserAuthDto(getCurrentUser(principal));
-    }
-
-    private Profile userToProfile(User viewedUser, User currentUser) {
-        Profile profile = new Profile();
-        profile.setUsername(viewedUser.getUsername());
-        profile.setBio(viewedUser.getBio());
-        profile.setImage(viewedUser.getImage());
-        if (currentUser == null) {
-            profile.setFollowing(false);
-        } else {
-            profile.setFollowing(currentUser.getFallowingList().stream().anyMatch(u -> u.getId() == viewedUser.getId()));
-        }
-
-        return profile;
-    }
-
-    private User userRegisDtoToUser(UserRegistrationDto dto) {
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setPassword(passwordEncoder.encode(dto.getPassword()));
-        return user;
-    }
-
-    private UserAuthenticationDto userToUserAuthDto(User user) {
-        UserAuthenticationDto userAuthenticationDto = new UserAuthenticationDto();
-
-        userAuthenticationDto.setUsername(user.getUsername());
-        userAuthenticationDto.setEmail(user.getEmail());
-        userAuthenticationDto.setBio(user.getBio());
-        userAuthenticationDto.setImage(user.getImage());
-
-        return userAuthenticationDto;
+        return mapper.map(getCurrentUser(principal), UserAuthenticationDto.class);
     }
 
     @Override
@@ -156,7 +141,7 @@ public class UserServiceDefault implements UserService {
         User user = userRepo.findByEmailIgnoreCase(dto.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User dont exist"));
         if (passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            UserAuthenticationDto authDto = userToUserAuthDto(user);
+            UserAuthenticationDto authDto = mapper.map(user, UserAuthenticationDto.class);
             authDto.setToken(jwtBuilder.getToken(String.valueOf(user.getId())));
             return authDto;
         } else {

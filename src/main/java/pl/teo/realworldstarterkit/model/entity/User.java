@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 @Entity(name = "users")
 @Getter @Setter
@@ -31,4 +32,16 @@ public class User {
     @ManyToMany
     private List<User> fallowingList;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id == user.id && Objects.equals(email, user.email) && Objects.equals(username, user.username) && Objects.equals(bio, user.bio) && Objects.equals(image, user.image) && Objects.equals(password, user.password) && Objects.equals(favouriteList, user.favouriteList) && Objects.equals(fallowingList, user.fallowingList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email, username, bio, image, password, favouriteList, fallowingList);
+    }
 }

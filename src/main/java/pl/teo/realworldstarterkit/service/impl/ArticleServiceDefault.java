@@ -148,7 +148,7 @@ public class ArticleServiceDefault implements ArticleService {
                     .collect(Collectors.toList()));
             userRepo.save(currentUser);
         }
-        return mapArticleToDisplay(article,principal);
+        return mapArticleToDisplay(article, principal);
     }
 
     @Override
@@ -205,6 +205,7 @@ public class ArticleServiceDefault implements ArticleService {
         }
         return article;
     }
+
     private String generateSlug(String title) {
         return title.toLowerCase().replaceAll("\\s+", "-") + "-" + RandomStringUtils.randomAlphanumeric(6);
     }
