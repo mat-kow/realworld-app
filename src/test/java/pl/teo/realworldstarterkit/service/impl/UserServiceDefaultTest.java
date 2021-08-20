@@ -209,6 +209,7 @@ class UserServiceDefaultTest {
             updatedUser.setId(1);
             updatedUser.setImage("image.com/bob");
             updatedUser.setEmail("bob@gmail.com");
+            updatedUser.setFallowingList(new ArrayList<>());
 
             assertEquals(updatedUser, captorValue);
 
