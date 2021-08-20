@@ -20,11 +20,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
+                .headers().frameOptions().disable()
+                .and()
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(new JwtTokenVerifier(secretKey()), UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
+                    .antMatchers("/h2-console/**").permitAll()
                     .antMatchers(HttpMethod.POST, "/api/users", "/api/users/login"). permitAll()
                     .antMatchers(HttpMethod.GET, "/api/profiles/**", "/api/articles/**", "/api/tags")
                         .permitAll()
